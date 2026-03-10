@@ -470,9 +470,32 @@ class MuonAdamW(torch.optim.Optimizer):
             self._adamw_beta2_t.fill_(group['betas'][1])
             self._adamw_eps_t.fill_(group['eps'])
             self._adamw_wd_t.fill_(group['weight_decay'])
-            adamw_step_fused(p, grad, state['exp_avg'], state['exp_avg_sq'],
-                            self._adamw_step_t, self._adamw_lr_t, self._adamw_beta1_t,
-                            self._adamw_beta2_t, self._adamw_eps_t, self._adamw_wd_t)
+            if USE_CUDA:
+                step_t = self._adamw_step_t
+                lr_t = self._adamw_lr_t
+                beta1_t = self._adamw_beta1_t
+                beta2_t = self._adamw_beta2_t
+                eps_t = self._adamw_eps_t
+                wd_t = self._adamw_wd_t
+            else:
+                step_t = torch.tensor(float(state['step']), dtype=torch.float32, device=grad.device)
+                lr_t = torch.tensor(group['lr'], dtype=torch.float32, device=grad.device)
+                beta1_t = torch.tensor(group['betas'][0], dtype=torch.float32, device=grad.device)
+                beta2_t = torch.tensor(group['betas'][1], dtype=torch.float32, device=grad.device)
+                eps_t = torch.tensor(group['eps'], dtype=torch.float32, device=grad.device)
+                wd_t = torch.tensor(group['weight_decay'], dtype=torch.float32, device=grad.device)
+            adamw_step_fused(
+                p,
+                grad,
+                state['exp_avg'],
+                state['exp_avg_sq'],
+                step_t,
+                lr_t,
+                beta1_t,
+                beta2_t,
+                eps_t,
+                wd_t,
+            )
 
     def _step_muon(self, group):
         params = group['params']
@@ -494,10 +517,28 @@ class MuonAdamW(torch.optim.Optimizer):
         self._muon_beta2_t.fill_(group["beta2"] if group["beta2"] is not None else 0.0)
         self._muon_lr_t.fill_(group["lr"] * max(1.0, shape[-2] / shape[-1])**0.5)
         self._muon_wd_t.fill_(group["weight_decay"])
-        muon_step_fused(stacked_grads, stacked_params,
-                        state["momentum_buffer"], state["second_momentum_buffer"],
-                        self._muon_momentum_t, self._muon_lr_t, self._muon_wd_t,
-                        self._muon_beta2_t, group["ns_steps"], red_dim)
+        if USE_CUDA:
+            momentum_t = self._muon_momentum_t
+            lr_t = self._muon_lr_t
+            wd_t = self._muon_wd_t
+            beta2_t = self._muon_beta2_t
+        else:
+            momentum_t = torch.tensor(group["momentum"], dtype=torch.float32, device=device)
+            lr_t = torch.tensor(group["lr"] * max(1.0, shape[-2] / shape[-1])**0.5, dtype=torch.float32, device=device)
+            wd_t = torch.tensor(group["weight_decay"], dtype=torch.float32, device=device)
+            beta2_t = torch.tensor(group["beta2"] if group["beta2"] is not None else 0.0, dtype=torch.float32, device=device)
+        muon_step_fused(
+            stacked_grads,
+            stacked_params,
+            state["momentum_buffer"],
+            state["second_momentum_buffer"],
+            momentum_t,
+            lr_t,
+            wd_t,
+            beta2_t,
+            group["ns_steps"],
+            red_dim,
+        )
         if USE_CUDA:
             torch._foreach_copy_(params, list(stacked_params.unbind(0)))
         else:
