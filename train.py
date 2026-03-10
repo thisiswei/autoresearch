@@ -464,13 +464,13 @@ class MuonAdamW(torch.optim.Optimizer):
                 state['exp_avg'] = torch.zeros_like(p)
                 state['exp_avg_sq'] = torch.zeros_like(p)
             state['step'] += 1
-            self._adamw_step_t.fill_(state['step'])
-            self._adamw_lr_t.fill_(group['lr'])
-            self._adamw_beta1_t.fill_(group['betas'][0])
-            self._adamw_beta2_t.fill_(group['betas'][1])
-            self._adamw_eps_t.fill_(group['eps'])
-            self._adamw_wd_t.fill_(group['weight_decay'])
             if USE_CUDA:
+                self._adamw_step_t.fill_(state['step'])
+                self._adamw_lr_t.fill_(group['lr'])
+                self._adamw_beta1_t.fill_(group['betas'][0])
+                self._adamw_beta2_t.fill_(group['betas'][1])
+                self._adamw_eps_t.fill_(group['eps'])
+                self._adamw_wd_t.fill_(group['weight_decay'])
                 step_t = self._adamw_step_t
                 lr_t = self._adamw_lr_t
                 beta1_t = self._adamw_beta1_t
@@ -513,11 +513,11 @@ class MuonAdamW(torch.optim.Optimizer):
         red_dim = -1 if shape[-2] >= shape[-1] else -2
         stacked_grads = torch.stack([p.grad for p in params])
         stacked_params = torch.stack(params)
-        self._muon_momentum_t.fill_(group["momentum"])
-        self._muon_beta2_t.fill_(group["beta2"] if group["beta2"] is not None else 0.0)
-        self._muon_lr_t.fill_(group["lr"] * max(1.0, shape[-2] / shape[-1])**0.5)
-        self._muon_wd_t.fill_(group["weight_decay"])
         if USE_CUDA:
+            self._muon_momentum_t.fill_(group["momentum"])
+            self._muon_beta2_t.fill_(group["beta2"] if group["beta2"] is not None else 0.0)
+            self._muon_lr_t.fill_(group["lr"] * max(1.0, shape[-2] / shape[-1])**0.5)
+            self._muon_wd_t.fill_(group["weight_decay"])
             momentum_t = self._muon_momentum_t
             lr_t = self._muon_lr_t
             wd_t = self._muon_wd_t
