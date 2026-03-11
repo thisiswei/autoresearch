@@ -581,10 +581,10 @@ if USE_CUDA:
 else:
     # Smaller defaults keep the same training loop viable on Apple silicon and CPU-only hosts.
     ASPECT_RATIO = 32
-    HEAD_DIM = 64
+    HEAD_DIM = 32
     WINDOW_PATTERN = "L"
 
-    TOTAL_BATCH_SIZE = 2**15
+    TOTAL_BATCH_SIZE = 65536
     EMBEDDING_LR = 0.3
     UNEMBEDDING_LR = 0.004
     MATRIX_LR = 0.02
@@ -596,7 +596,7 @@ else:
     FINAL_LR_FRAC = 0.0
 
     DEPTH = 4
-    DEVICE_BATCH_SIZE = 4 if USE_MPS else 1
+    DEVICE_BATCH_SIZE = 4
 
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
