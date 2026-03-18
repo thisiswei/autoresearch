@@ -582,11 +582,11 @@ else:
     # Smaller defaults keep the same training loop viable on Apple silicon and CPU-only hosts.
     ASPECT_RATIO = 32
     HEAD_DIM = 32
-    WINDOW_PATTERN = "L"
+    WINDOW_PATTERN = "SSL"
 
     TOTAL_BATCH_SIZE = 32768
     EMBEDDING_LR = 0.3
-    UNEMBEDDING_LR = 0.004
+    UNEMBEDDING_LR = 0.002
     MATRIX_LR = 0.02
     SCALAR_LR = 0.1
     WEIGHT_DECAY = 0.0
@@ -595,7 +595,7 @@ else:
     WARMDOWN_RATIO = 0.5
     FINAL_LR_FRAC = 0.0
 
-    DEPTH = 4
+    DEPTH = 2
     DEVICE_BATCH_SIZE = 4
 
 # ---------------------------------------------------------------------------
