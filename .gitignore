@@ -18,6 +18,10 @@ AGENTS.md
 
 # Experimental code/artifacts
 dev/
+run.log
+prepare.log
+mac_loop.log
+mac_loop.pid
 
 # Results file
 results.tsv
